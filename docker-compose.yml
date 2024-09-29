@@ -1,0 +1,56 @@
+version: '3.8'
+
+networks:
+  price-tracker:
+    name: price-tracker
+
+services:
+  nginx:
+    container_name: price-tracker_nginx
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./_docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./src:/var/www/html
+    depends_on:
+      - php
+    networks:
+      - price-tracker
+
+  php:
+    container_name: price-tracker_php
+    build:
+      context: _docker/php
+    volumes:
+      - ./src:/var/www/html
+    depends_on:
+      - mysql
+    networks:
+      - price-tracker
+
+  cron:
+    container_name: price-tracker_cron
+    build:
+      context: _docker/php
+    volumes:
+      - ./src:/var/www/html
+    command: [ "cron", "-f" ]
+    networks:
+      - price-tracker
+
+  mysql:
+    container_name: price-tracker_mysql
+    image: mysql:latest
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: pricetracker
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./_docker/mysql/db:/var/lib/mysql
+    networks:
+      - price-tracker
