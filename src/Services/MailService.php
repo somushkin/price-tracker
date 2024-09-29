@@ -24,7 +24,6 @@ class MailService implements IMailer
 
     public static function mail(string $email, string $subject, string $message): void
     {
-        file_put_contents(__DIR__ . "/tmp", $message . PHP_EOL, FILE_APPEND);
         mail($email, $subject, $message);
     }
 }
